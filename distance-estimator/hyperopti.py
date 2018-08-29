@@ -44,18 +44,18 @@ def create_model(x_train, y_train, x_test, y_test):
 
     model.add(Dense(1))
 
-    parallel_model = multi_gpu_model(model, gpus=2)
-    parallel_model.compile(loss='mean_squared_error', metrics=['mae'],
+    model = multi_gpu_model(model, gpus=2)
+    model.compile(loss='mean_squared_error', metrics=['mae'],
                   optimizer={{choice(['rmsprop', 'adam', 'sgd'])}})
 
     # ----------- define callbacks ----------- #
     earlyStopping = EarlyStopping(monitor='loss', patience=10, verbose=0, mode='min')
     reduce_lr_loss = ReduceLROnPlateau(monitor='loss', factor=0.5, patience=7,
-								   verbose=1, epsilon=1e-5, mode='min')
+								       verbose=1, epsilon=1e-5, mode='min')
     tensorboard = TensorBoard(log_dir="logs/model@{}".format(int(time.time())))
 
     # ----------- start training ----------- #
-    parallel_model.fit(x_train, y_train,
+    model.fit(x_train, y_train,
               batch_size={{choice([1024, 2048])}},
               epochs=5000,
               callbacks=[tensorboard],
@@ -63,11 +63,12 @@ def create_model(x_train, y_train, x_test, y_test):
               validation_split=0.1)
 
     # ----------- evaluate model ----------- #
-    score, acc = parallel_model.evaluate(x_test, y_test, verbose=1)
+    score, acc = model.evaluate(x_test, y_test, verbose=1)
     print('Test accuracy:', score)
 
     # ----------- save model and weights ----------- #
     '''
+    # NOTE: WAITING ON HYPERAS ISSUE
     model_json = model.to_json()
     modelname = "{}".format(int(time.time()))
     with open("generated_files/model_{}.json".format(modelname), "w") as json_file:
@@ -77,7 +78,7 @@ def create_model(x_train, y_train, x_test, y_test):
     print("Saved model to disk")
     '''
 
-    return {'loss': score, 'status': STATUS_OK, 'model': parallel_model}
+    return {'loss': score, 'status': STATUS_OK, 'model': model}
 
 if __name__ == '__main__':
     trials = Trials()
