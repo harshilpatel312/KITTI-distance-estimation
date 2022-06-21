@@ -4,7 +4,7 @@ matplotlib==1.5.2
 pandas==0.23.3
 hyperas==0.4
 opencv_python==3.4.1.15
-numpy==1.14.0
+numpy==1.22.0
 Keras==2.2.0
 asposebarcode==1.0.0
 scikit_learn==0.19.2
